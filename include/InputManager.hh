@@ -25,8 +25,11 @@ public:
 
   Int_t runNum;
   Double_t numFiles;
+  
+  Double_t StartFile;
 
   Bool_t isDDASEvent;
+
 
   Bool_t fast;
   Bool_t lean;

@@ -47,15 +47,6 @@ int main(int argc, char **argv){
 
   
 
-  Bool_t extFlag=theInputManager.ext_flag;
-  Bool_t ext_sigma_flag=theInputManager.ext_sigma_flag;
-
-  //defualt Filter settings see pixie manual
-  Double_t FL=theInputManager.FL;
-  Double_t FG=theInputManager.FG;
-  int CFD_delay=theInputManager.d; //in clock ticks
-  Double_t CFD_scale_factor =theInputManager.w;
-
   
 
   //prepare files
@@ -69,7 +60,7 @@ int main(int argc, char **argv){
   TChain * inT;
   if (theInputManager.specificFileName !=""){
     inT= new TChain("flt");
-    for (int i=0;i<numFiles;i++){
+    for (int i=theInputManager.StartFile;i<theInputManager.StartFile+numFiles;i++){
       TString s =fileMan->LoadFile(runNum,i,theInputManager.specificFileName);
       inT->Add(s);
       cout<<"Adding file "<<s<<endl;
@@ -82,8 +73,12 @@ int main(int argc, char **argv){
   
   // Openning output Tree and output file
 
-  outFile = new TFile("TestOut.root","recreate");
-
+  stringstream temp;
+  if ( theInputManager.StartFile !=0 )
+    temp<<"~/analysis/run"<<runNum<<"/Run"<<runNum<<"LA"<<theInputManager.StartFile<<".root";
+  else 
+    temp<<"~/analysis/run"<<runNum<<"/Run"<<runNum<<"LA0"<<".root";
+  outFile = new TFile(temp.str().c_str(),"recreate");
 
 
   //////////////////////////////////////////////

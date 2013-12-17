@@ -20,6 +20,8 @@ InputManager::InputManager()
 
   specificFileName="";
 
+  StartFile=0;
+
   //defualt Filter settings see pixie manual
   FL=3;
   FG=0;
@@ -54,6 +56,8 @@ InputManager::InputManager()
 
   isDDASEvent=false;
 
+
+
   validTimingModes.push_back("internalCFD");
   validTimingModes.push_back("softwareCFD");
   validTimingModes.push_back("fitting");
@@ -79,6 +83,8 @@ void InputManager::BuildInputMap(){
   ValidNumericalInputs["gammapeak"]=&GammaPeak;
   ValidNumericalInputs["gammapeak2"]=&GammaPeak2;
   ValidNumericalInputs["toffudge"]=&TOFFudge;
+
+  ValidNumericalInputs["startfile"]=&StartFile;
   
   // ValidBoolInputs["remake"]=&reMakePulseShape;
 
