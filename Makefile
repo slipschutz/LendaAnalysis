@@ -1,5 +1,7 @@
+LENDAHEAD=$(shell echo $$LENDAHEAD)
 CXX=$(shell root-config --cxx)
-CFLAGS=-c -g -Wall $(shell root-config --cflags) -I./src -I ./include -I/user/lipschut/Introspective/ -I/user/lipschut/DDASEvent/ -O3
+CFLAGS=-c -g -Wall $(shell root-config --cflags) -O3
+INCLUDES=-I$(LENDAHEAD)/LendaCommonInclude/ -I./include
 LDLIBS=$(shell root-config --glibs)
 LDFLAGS=$(shell root-config --ldflags)
 #SOURCES=./src/SL_Event.cc ./src/FileManager.cc ./src/Filter.cc
@@ -34,18 +36,18 @@ all: $(EXECUTABLE)
 
 $(EXECUTABLE) : $(OBJECTS) $(MAINO)
 	@echo "Building target" $@ "..." 
-	@$(CXX) $(LDFLAGS) -o $@ $(OBJECTS) $(MAINO) $(LDLIBS) -L$(EVENTLIBPATH) -l$(EVENTLIB) -L$(DDASCHANNELPATH) -l$(CHEVENTLIB)
+	@$(CXX) $(INCLUDES) $(LDFLAGS) -o $@ $(OBJECTS) $(MAINO) $(LDLIBS) -Wl,-rpath,$(LENDAHEAD)/LendaCommonLib -lLendaEvent -lDDASEvent -lSettings -L$(LENDAHEAD)/LendaCommonLib
 	@echo
 	@echo "Build succeed"
 
 
 .cc.o:
 	@echo "Compiling" $< "..."
-	@$(CXX) $(CFLAGS) $< -o $@ 
+	@$(CXX) $(CFLAGS) $(INCLUDES) $< -o $@ 
 
 $(MAINO): $(MAIN) $(HEADERS)
 	@echo "Compiling" $< "..."
-	@$(CXX) $(CFLAGS) $< -o $@  
+	@$(CXX) $(INCLUDES) $(CFLAGS) $< -o $@  
 
 %.hh: 
 	@
