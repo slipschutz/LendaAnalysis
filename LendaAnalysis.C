@@ -148,7 +148,7 @@ int main(int argc, char **argv){
 
     }
     nameStream.str("");
-    nameStream<<"ChannelsN"<<j;
+    nameStream<<"ChannelsN"<<j+1;
     ChannelsForN[j] = new TH1F(nameStream.str().c_str(),nameStream.str().c_str(),16,0,15);
   }
 
