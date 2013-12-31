@@ -18,6 +18,7 @@
 #include <vector>
 #include <sstream>
 #include <TH1F.h>
+#include <TH2F.h>
 #include <cmath>
 int main(int argc, char **argv){
 
@@ -101,6 +102,9 @@ int main(int argc, char **argv){
   //Raw Channels Histogram
   TH1F * ChannelsRaw = new TH1F("ChannelsRaw","ChannelsRaw",16,0,15);
 
+  //Channels Histogram for different multiplicities
+  vector <TH1F*> ChannelsForN;
+
   //Energy Cut settings for Channel histograms
   Double_t NumOfChannelECuts = 20;
   Double_t MaxEnergy = 7000;
@@ -122,13 +126,13 @@ int main(int argc, char **argv){
 			       ERawBinning[0],ERawBinning[1],ERawBinning[2]);
   }
 
-
+  TH2F* test = new TH2F("test","",100,0,10000,100,0,10000);
   
 
   Int_t MaxMultiplicity=6;
   EnergiesRawForN.resize(MaxMultiplicity);
   EnergiesNoOFsForN.resize(MaxMultiplicity);
-
+  ChannelsForN.resize(MaxMultiplicity);
 
   //Declare things histograms for particular multiplicities
   for (int j=0;j<MaxMultiplicity;j++){
@@ -143,6 +147,9 @@ int main(int argc, char **argv){
 					   ERawBinning[0],ERawBinning[1],ERawBinning[2]));
 
     }
+    nameStream.str("");
+    nameStream<<"ChannelsN"<<j;
+    ChannelsForN[j] = new TH1F(nameStream.str().c_str(),nameStream.str().c_str(),16,0,15);
   }
 
 
@@ -187,10 +194,17 @@ int main(int argc, char **argv){
 	  ChannelsECut[a]->Fill(theEvent->channels[i]);
 	}
       }
+      //Fill channels for different multiplicities 
+      ChannelsForN[theEvent->N-1]->Fill(theEvent->channels[i]);
+				      
     }//End Loop over Channels In Event
     
+    if (theEvent->N==2)
+      test->Fill(theEvent->energies[0],theEvent->energies[1]);
+
     Multiplicity->Fill(theEvent->N);
-    
+
+
     if ( jentry % 100000 == 0){
       cout<<"ON "<<jentry<<endl;
     }
@@ -208,18 +222,23 @@ int main(int argc, char **argv){
 	EnergiesRawForN[i][j]->Write();
       }
   }
-  
 
+  for (int i=0;i<ChannelsForN.size();i++){
+    ChannelsForN[i]->Write();
+  }
+  
   for (int i=0;i<EnergiesRaw.size();i++){
     EnergiesRaw[i]->Write();
     EnergiesNoOFs[i]->Write();
   }
+
   for (int i=0;i<ChannelsECut.size();i++){
     ChannelsECut[i]->Write();
   }
   ChannelsRaw->Write();
 
   Multiplicity->Write();
+  test->Write();
   outFile->Close();
   
   cout<<"\n\n*****Finished******"<<endl;
