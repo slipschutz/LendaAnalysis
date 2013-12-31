@@ -188,9 +188,9 @@ int main(int argc, char **argv){
       ///Fill Raw Channels Histogram
       ChannelsRaw->Fill(theEvent->channels[i]);
       
-      //Fill Channels Histogram with energy cut
+      //Fill Channels Histogram with energy cut and remove OFs
       for (int a=0;a<ChannelsECut.size();a++){
-	if (theEvent->energies[i]>(double(a)/ChannelsECut.size())*MaxEnergy){
+	if (theEvent->energies[i]>(double(a)/ChannelsECut.size())*MaxEnergy && theEvent->OverFlows[i]==false){
 	  ChannelsECut[a]->Fill(theEvent->channels[i]);
 	}
       }
