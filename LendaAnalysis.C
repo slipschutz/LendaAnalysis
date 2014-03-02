@@ -19,6 +19,7 @@
 #include <cmath>
 int main(int argc, char **argv){
 
+
   vector <string> inputs;
   for (int i=1;i<argc;++i){
     inputs.push_back(string(argv[i]));
@@ -33,8 +34,8 @@ int main(int argc, char **argv){
     return 0;
   }
   
-  BuildBins();
-  
+
+  BuildBins();  
   ////////////////////////////////////////////////////////////////////////////////////
 
   //load settings
@@ -227,9 +228,9 @@ int main(int argc, char **argv){
   TH1F* TOFEnergyRandomBkg = new TH1F("TOFEnergyRandomBkg","",nBinsForEnergy,0,20);// TOF energy for negative time Of Flights
   TH1F* TOFEnergyRBkgSubtracted = new TH1F("TOFEnergyRBkgSubtracted","",nBinsForEnergy,0,20);// TOFEnergyNeutrons-TOFEnergyRandomBkg 
 
-  TH1F* TOFEnergyCFBins = new TH1F("TOFEnergyCFBins","",70,CFBins);  
-  TH1F* TOFEnergyBkgCFBins = new TH1F("TOFEnergyBkgCFBins","",70,CFBins);  
-  TH1F* TOFEnergySubCFBins = new TH1F("TOFEnergySubCFBins","",70,CFBins);  
+  TH1F* TOFEnergyCFBins = new TH1F("TOFEnergyCFBins","",NumOfCFBins,CFBins);  
+  TH1F* TOFEnergyBkgCFBins = new TH1F("TOFEnergyBkgCFBins","",NumOfCFBins,CFBins);  
+  TH1F* TOFEnergySubCFBins = new TH1F("TOFEnergySubCFBins","",NumOfCFBins,CFBins);  
   
   TH2F* EvsTOFEnergy = new TH2F("EvsTOFEnergy","",nBinsForEnergy,0,20,1000,0,20000);
   TH2F* EvsTOFEnergyBkg = new TH2F("EvsTOFEnergyBkg","",nBinsForEnergy,0,20,1000,0,20000);
@@ -248,9 +249,9 @@ int main(int argc, char **argv){
   TH1F * TOFEnergyNeutrons1PSL_L = new TH1F("TOFEnergyNeutrons1PSL_L","",nBinsForLLEnergy,0,20); // TOF energy with gammas cut and PS
   TH1F * TOFEnergyRandomBkg1PSL_L = new TH1F("TOFEnergyRandomBkg1PSL_L","",nBinsForLLEnergy,0,20);// TOF energy for negative time Of Flights
   TH1F * TOFEnergyRBkgSubtracted1PSL_L = new TH1F("TOFEnergyRBkgSubtracted1PSL_L","",nBinsForLLEnergy,0,20);//
-  TH1F* TOFEnergyCFBinsL_L = new TH1F("TOFEnergyCFBinsL_L","",70,CFBins);  
-  TH1F* TOFEnergyBkgCFBinsL_L = new TH1F("TOFEnergyBkgCFBinsL_L","",70,CFBins);  
-  TH1F* TOFEnergySubCFBinsL_L = new TH1F("TOFEnergySubCFBinsL_L","",70,CFBins);  
+  TH1F* TOFEnergyCFBinsL_L = new TH1F("TOFEnergyCFBinsL_L","",NumOfCFBins,CFBins);  
+  TH1F* TOFEnergyBkgCFBinsL_L = new TH1F("TOFEnergyBkgCFBinsL_L","",NumOfCFBins,CFBins);  
+  TH1F* TOFEnergySubCFBinsL_L = new TH1F("TOFEnergySubCFBinsL_L","",NumOfCFBins,CFBins);  
 
   TH2F* EvsTOFEnergyL_L = new TH2F("EvsTOFEnergyL_L","",nBinsForLLEnergy,0,20,1000,0,20000);
   TH2F* EvsTOFEnergyBkgL_L = new TH2F("EvsTOFEnergyBkgL_L","",nBinsForLLEnergy,0,20,1000,0,20000);
@@ -287,14 +288,6 @@ int main(int argc, char **argv){
       //Fill Raw energy Histogram
       EnergiesRaw[theEvent->channels[i]]->Fill(theEvent->energies[i]);
 
-      if (theEvent->channels[i]==8&&theEvent->N==2){
-	for (int a=0;a<ReferenceEnergiesScaled.size();a++){
-	  for (int b=0;b<ReferenceEnergiesScaled[a].size();b++){
-	    //	    ReferenceEnergiesScaled[a][b]->Fill(theEvent->energies[i]*(0.1+(double(a)/100.0) + b*1.0));
-	    ReferenceEnergiesScaled[a][b]->Fill((theEvent->energies[i])*((double(a-50)/100))+(b-50)*10);
-	  }
-	}
-      }
       
       ///Fill Raw Energy Histograms for particlar Multiplicities
       EnergiesRawForN[theEvent->N-1][theEvent->channels[i]]->Fill(theEvent->energies[i]);
@@ -392,33 +385,19 @@ int main(int argc, char **argv){
 	    TOFEnergyCFBinsL_L->Fill(theEvent->TOFEnergy);
 	    EvsTOFEnergyL_L->Fill(theEvent->TOFEnergy,theEvent->energies[0]);
 	  }
-	  for (int a=0;a<ThreshHoldVaryL_L.size();a++){
-	    int size =ThreshHoldVaryL_L.size();
-	    int half=size/2;
-	    if (theEvent->energies[0] > ( RefScintThresh + 3*(double(a-50)) ) ){
-	      ThreshHoldVaryL_L[a]->Fill(theEvent->TOFEnergy);
-	    }
-	  }
+	}
 	  
 
-	}
-	if (theEvent->ShiftTOF < -2 && theEvent->ShiftTOF>-35){
-	  if ( theEvent->energies[0]>RefScintThresh){
-	    TOFEnergyRandomBkg1PSL_L->Fill(theEvent->TOFEnergy);
-	    TOFEnergyBkgCFBinsL_L->Fill(theEvent->TOFEnergy);
-	    EvsTOFEnergyBkgL_L->Fill(theEvent->TOFEnergy,theEvent->energies[0]);
-	  }
-	  for (int a=0;a<ThreshHoldVaryBkgL_L.size();a++){
-	    int size =ThreshHoldVaryBkgL_L.size();
-	    int half=size/2;
-	    if (theEvent->energies[0] > ( RefScintThresh + 3*(double(a-50)) ) ){
-	      ThreshHoldVaryBkgL_L[a]->Fill(theEvent->TOFEnergy);
-	    }
-	  }
-
+      }
+      if (theEvent->ShiftTOF < -2 && theEvent->ShiftTOF>-35){
+	if ( theEvent->energies[0]>RefScintThresh){
+	  TOFEnergyRandomBkg1PSL_L->Fill(theEvent->TOFEnergy);
+	  TOFEnergyBkgCFBinsL_L->Fill(theEvent->TOFEnergy);
+	  EvsTOFEnergyBkgL_L->Fill(theEvent->TOFEnergy,theEvent->energies[0]);
 	}
       }
     }
+    
 
 
 
@@ -436,19 +415,18 @@ int main(int argc, char **argv){
     TOFEnergyRBkgSubtracted->SetBinContent(i,TOFEnergyNeutrons->GetBinContent(i)-TOFEnergyRandomBkg->GetBinContent(i));
     TOFEnergyRBkgSubtracted1PSL_L->SetBinContent(i,TOFEnergyNeutrons1PSL_L->GetBinContent(i)-TOFEnergyRandomBkg1PSL_L->GetBinContent(i));
   }
-  for (int i=1;i<TOFEnergySubCFBins->GetXaxis()->GetNbins();i++){
-    TOFEnergySubCFBins->SetBinContent(i,TOFEnergyCFBins->GetBinContent(i)-TOFEnergyBkgCFBins->GetBinContent(i));
+
+  Double_t ErrorCF[NumOfCFBins+1];//ErrorArray should start at 1 not 0 and go to numBins +1
+  Double_t ErrorCFL_L[NumOfCFBins+1];//ErrorArray should start at 1 not 0 and go to numBins +1
+  for (int i=0;i<TOFEnergySubCFBins->GetXaxis()->GetNbins();i++){
+    Float_t N =TOFEnergyCFBins->GetBinContent(i+1);
+    Float_t NRandom=TOFEnergyBkgCFBins->GetBinContent(i+1);
+    TOFEnergySubCFBins->SetBinContent(i+1,N-NRandom);
+    ErrorCF[i+1]=sqrt(N+NRandom);
+    
     TOFEnergySubCFBinsL_L->SetBinContent(i,TOFEnergyCFBinsL_L->GetBinContent(i)-TOFEnergyBkgCFBinsL_L->GetBinContent(i));
   }
-  for (int i=0;i<ThreshHoldVaryResultL_L.size();i++){
-    int bins =ThreshHoldVaryResultL_L[i]->GetNbinsX();
-    for (int j=0;j<bins;j++){
-      double val1=ThreshHoldVaryL_L[i]->GetBinContent(j+1);
-      double val2=ThreshHoldVaryBkgL_L[i]->GetBinContent(j+1);
-      ThreshHoldVaryResultL_L[i]->SetBinContent(j+1,val1-val2);
-    }
-  }
-
+  TOFEnergySubCFBins->SetError(ErrorCF);
 
 
   //////////////////////////////////////////////
@@ -527,7 +505,7 @@ int main(int argc, char **argv){
   EvsTOFEnergyL_L->Write();
   EvsTOFEnergyBkgL_L->Write();
 
-  for (int i=0;i<ReferenceEnergiesScaled.size();i++){
+  /*  for (int i=0;i<ReferenceEnergiesScaled.size();i++){
     for (int j=0;j<ReferenceEnergiesScaled[i].size();j++){
       ReferenceEnergiesScaled[i][j]->Scale(20);
       //	ReferenceEnergiesScaled[i][j]->Write();
@@ -538,7 +516,7 @@ int main(int argc, char **argv){
     // ThreshHoldVaryBkgL_L[i]->Write();
     // ThreshHoldVaryResultL_L[i]->Write();
 
-  }
+    }*/
 
 
   outFile->Close();

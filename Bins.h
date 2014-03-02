@@ -1,7 +1,7 @@
 
 
-
-Float_t CFBins[71];
+const int NumOfCFBins=71;
+Float_t CFBins[NumOfCFBins+1];//Array Defining bin edges is nBins+1 in lenght
 Double_t x[71]={0.0075000,
 		0.0250000,
 		0.0450000,
@@ -148,9 +148,10 @@ Double_t ex[71] = {0.0075000,
 void BuildBins(){
   
   CFBins[0]=x[0]-ex[0];//first bin is left side of bin
-  for (int i=1;i<70;i++){
+  for (int i=1;i<71;i++){
     CFBins[i] = x[i]-ex[i];
   }
-  CFBins[70]=x[70]+ex[70];//last bin to the right side of last bin
+  CFBins[71]=x[70]+ex[70];//last bin to the right side of last bin
+
 
 }
