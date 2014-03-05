@@ -411,10 +411,23 @@ int main(int argc, char **argv){
   }//End Main Loop over Everything
 
   ///Do analysis on whole historgrams 
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  Double_t ErrorNB[TOFEnergyNeutrons->GetXaxis()->GetNbins()+1];//ErrorArray should start at 1 not 0 and go to numBins +1
+  Double_t ErrorNBL_L[TOFEnergyNeutrons->GetXaxis()->GetNbins()+1];//ErrorArray should start at 1 not 0 and go to numBins +1
   for (int i=1;i<=TOFEnergyNeutrons->GetXaxis()->GetNbins();i++){
-    TOFEnergyRBkgSubtracted->SetBinContent(i,TOFEnergyNeutrons->GetBinContent(i)-TOFEnergyRandomBkg->GetBinContent(i));
-    TOFEnergyRBkgSubtracted1PSL_L->SetBinContent(i,TOFEnergyNeutrons1PSL_L->GetBinContent(i)-TOFEnergyRandomBkg1PSL_L->GetBinContent(i));
+    Float_t N = TOFEnergyNeutrons->GetBinContent(i);
+    Float_t NRandom = TOFEnergyRandomBkg->GetBinContent(i);
+    TOFEnergyRBkgSubtracted->SetBinContent(i,N-NRandom);
+    ErrorNB[i]=sqrt(N+NRandom);
+
+
+    Float_t NL_L =TOFEnergyNeutrons1PSL_L->GetBinContent(i);
+    Float_t NRandomL_L=TOFEnergyRandomBkg1PSL_L->GetBinContent(i);
+    TOFEnergyRBkgSubtracted1PSL_L->SetBinContent(i,NL_L-NRandomL_L);
+    ErrorNBL_L[i]=sqrt(NL_L+NRandomL_L);
   }
+  TOFEnergyRBkgSubtracted->SetError(ErrorNB);
+  TOFEnergyRBkgSubtracted1PSL_L->SetError(ErrorNBL_L);
 
   Double_t ErrorCF[NumOfCFBins+1];//ErrorArray should start at 1 not 0 and go to numBins +1
   Double_t ErrorCFL_L[NumOfCFBins+1];//ErrorArray should start at 1 not 0 and go to numBins +1
@@ -424,9 +437,13 @@ int main(int argc, char **argv){
     TOFEnergySubCFBins->SetBinContent(i+1,N-NRandom);
     ErrorCF[i+1]=sqrt(N+NRandom);
     
-    TOFEnergySubCFBinsL_L->SetBinContent(i,TOFEnergyCFBinsL_L->GetBinContent(i)-TOFEnergyBkgCFBinsL_L->GetBinContent(i));
+    Float_t NL_L = TOFEnergyCFBinsL_L->GetBinContent(i+1);
+    Float_t NRandomL_L=TOFEnergyBkgCFBinsL_L->GetBinContent(i+1);
+    TOFEnergySubCFBinsL_L->SetBinContent(i+1,NL_L-NRandomL_L);
+    ErrorCFL_L[i+1]=sqrt(NL_L+NRandomL_L);
   }
   TOFEnergySubCFBins->SetError(ErrorCF);
+  TOFEnergySubCFBinsL_L->SetError(ErrorCFL_L);
 
 
   //////////////////////////////////////////////
