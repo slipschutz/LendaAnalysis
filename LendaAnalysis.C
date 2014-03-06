@@ -17,6 +17,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <cmath>
+#include "TMath.h"
 int main(int argc, char **argv){
 
 
@@ -388,16 +389,16 @@ int main(int argc, char **argv){
 	}
 	  
 
-      }
-      if (theEvent->ShiftTOF < -2 && theEvent->ShiftTOF>-35){
-	if ( theEvent->energies[0]>RefScintThresh){
-	  TOFEnergyRandomBkg1PSL_L->Fill(theEvent->TOFEnergy);
-	  TOFEnergyBkgCFBinsL_L->Fill(theEvent->TOFEnergy);
-	  EvsTOFEnergyBkgL_L->Fill(theEvent->TOFEnergy,theEvent->energies[0]);
+      
+	if (theEvent->ShiftTOF < -2 && theEvent->ShiftTOF>-35){
+	  if ( theEvent->energies[0]>RefScintThresh){
+	    TOFEnergyRandomBkg1PSL_L->Fill(theEvent->TOFEnergy);
+	    TOFEnergyBkgCFBinsL_L->Fill(theEvent->TOFEnergy);
+	    EvsTOFEnergyBkgL_L->Fill(theEvent->TOFEnergy,theEvent->energies[0]);
+	  }
 	}
       }
     }
-    
 
 
 
@@ -412,43 +413,34 @@ int main(int argc, char **argv){
 
   ///Do analysis on whole historgrams 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  Double_t ErrorNB[TOFEnergyNeutrons->GetXaxis()->GetNbins()+1];//ErrorArray should start at 1 not 0 and go to numBins +1
-  Double_t ErrorNBL_L[TOFEnergyNeutrons->GetXaxis()->GetNbins()+1];//ErrorArray should start at 1 not 0 and go to numBins +1
   for (int i=1;i<=TOFEnergyNeutrons->GetXaxis()->GetNbins();i++){
     Float_t N = TOFEnergyNeutrons->GetBinContent(i);
     Float_t NRandom = TOFEnergyRandomBkg->GetBinContent(i);
     TOFEnergyRBkgSubtracted->SetBinContent(i,N-NRandom);
-    ErrorNB[i]=sqrt(N+NRandom);
+    TOFEnergyRBkgSubtracted->SetBinError(i,TMath::Sqrt(N+NRandom));
 
 
     Float_t NL_L =TOFEnergyNeutrons1PSL_L->GetBinContent(i);
     Float_t NRandomL_L=TOFEnergyRandomBkg1PSL_L->GetBinContent(i);
     TOFEnergyRBkgSubtracted1PSL_L->SetBinContent(i,NL_L-NRandomL_L);
-    ErrorNBL_L[i]=sqrt(NL_L+NRandomL_L);
+    TOFEnergyRBkgSubtracted1PSL_L->SetBinError(i,TMath::Sqrt(NL_L+NRandomL_L));
   }
-  TOFEnergyRBkgSubtracted->SetError(ErrorNB);
-  TOFEnergyRBkgSubtracted1PSL_L->SetError(ErrorNBL_L);
 
-  Double_t ErrorCF[NumOfCFBins+1];//ErrorArray should start at 1 not 0 and go to numBins +1
-  Double_t ErrorCFL_L[NumOfCFBins+1];//ErrorArray should start at 1 not 0 and go to numBins +1
-  for (int i=0;i<TOFEnergySubCFBins->GetXaxis()->GetNbins();i++){
-    Float_t N =TOFEnergyCFBins->GetBinContent(i+1);
-    Float_t NRandom=TOFEnergyBkgCFBins->GetBinContent(i+1);
-    TOFEnergySubCFBins->SetBinContent(i+1,N-NRandom);
-    ErrorCF[i+1]=sqrt(N+NRandom);
+  for (int i=1;i<=TOFEnergySubCFBins->GetXaxis()->GetNbins();i++){
+    Float_t N =TOFEnergyCFBins->GetBinContent(i);
+    Float_t NRandom=TOFEnergyBkgCFBins->GetBinContent(i);
+    TOFEnergySubCFBins->SetBinContent(i,N-NRandom);
+    TOFEnergySubCFBins->SetBinError(i,TMath::Sqrt(N+NRandom));
     
-    Float_t NL_L = TOFEnergyCFBinsL_L->GetBinContent(i+1);
-    Float_t NRandomL_L=TOFEnergyBkgCFBinsL_L->GetBinContent(i+1);
-    TOFEnergySubCFBinsL_L->SetBinContent(i+1,NL_L-NRandomL_L);
-    ErrorCFL_L[i+1]=sqrt(NL_L+NRandomL_L);
+    Float_t NL_L = TOFEnergyCFBinsL_L->GetBinContent(i);
+    Float_t NRandomL_L=TOFEnergyBkgCFBinsL_L->GetBinContent(i);
+    TOFEnergySubCFBinsL_L->SetBinContent(i,NL_L-NRandomL_L);
+    TOFEnergySubCFBinsL_L->SetBinError(i,TMath::Sqrt(NL_L+NRandomL_L));
   }
-  TOFEnergySubCFBins->SetError(ErrorCF);
-  TOFEnergySubCFBinsL_L->SetError(ErrorCFL_L);
 
-
-  //////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //Write all the histograms to file
-  //////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   for (int i=0;i<EnergiesNoOFsForN.size();i++){
     for (int j=0;j<EnergiesNoOFsForN[i].size();j++){
