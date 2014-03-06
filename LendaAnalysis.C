@@ -258,21 +258,26 @@ int main(int argc, char **argv){
   TH2F* EvsTOFEnergyBkgL_L = new TH2F("EvsTOFEnergyBkgL_L","",nBinsForLLEnergy,0,20,1000,0,20000);
 
   double RefScintThresh=313.619;
-  vector <TH1F*> ThreshHoldVaryL_L(100);
-  vector <TH1F*> ThreshHoldVaryBkgL_L(100);
-  vector <TH1F*> ThreshHoldVaryResultL_L(100);
-  for (int i=0;i<ThreshHoldVaryL_L.size();i++){
+  
+  vector<double> threshVals(2);
+  threshVals[0]=43.9740;
+  threshVals[1]=153.647;//{ Americum 26.3, americium 59.5}
+  vector <TH1F*> LendaThreshs(threshVals.size());
+  vector <TH1F*> LendaThreshsBkg(threshVals.size());
+  vector <TH1F*> LendaThreshsResult(threshVals.size());
+
+  for (int i=0;i<threshVals.size();i++){
     nameStream.str("");
-    nameStream<<"ThreshHoldVaryL_L"<<i;
-    ThreshHoldVaryL_L[i] = new TH1F(nameStream.str().c_str(),"",nBinsForLLEnergy,0,20);
+    nameStream<<"LendaThresh_"<<TMath::Floor(threshVals[i]);
+    LendaThreshs[i] = new TH1F(nameStream.str().c_str(),"",NumOfCFBins,CFBins);
 
     nameStream.str("");
-    nameStream<<"ThreshHoldVaryBkgL_L"<<i;
-    ThreshHoldVaryBkgL_L[i] = new TH1F(nameStream.str().c_str(),"",nBinsForLLEnergy,0,20);
-
+    nameStream<<"LendaThreshBkg_"<<TMath::Floor(threshVals[i]);
+    LendaThreshsBkg[i] = new TH1F(nameStream.str().c_str(),"",NumOfCFBins,CFBins);
+    
     nameStream.str("");
-    nameStream<<"ThreshHoldVaryResultL_L"<<i;
-    ThreshHoldVaryResultL_L[i] = new TH1F(nameStream.str().c_str(),"",nBinsForLLEnergy,0,20);
+    nameStream<<"LendaThreshSub_"<<TMath::Floor(threshVals[i]);
+    LendaThreshsResult[i] = new TH1F(nameStream.str().c_str(),"",NumOfCFBins,CFBins);
   }
 
 
@@ -349,11 +354,23 @@ int main(int argc, char **argv){
 	  TOFEnergyNeutrons->Fill(theEvent->TOFEnergy);
 	  TOFEnergyCFBins->Fill(theEvent->TOFEnergy);
 	  EvsTOFEnergy->Fill(theEvent->TOFEnergy,sqrt(theEvent->energies[0]*theEvent->energies[1]));
+	  //loop over the different threshold options for lenda spectra
+	  for (int a=0;a<LendaThreshs.size();a++){
+	    if (TMath::Sqrt(theEvent->energies[0]*theEvent->energies[1])>threshVals[a]){
+	      LendaThreshs[a]->Fill(theEvent->TOFEnergy);
+	    }
+	  }
 	}
 	if (theEvent->ShiftTOF < -2.5 && theEvent->ShiftTOF>-100){
 	  TOFEnergyRandomBkg->Fill(theEvent->TOFEnergy);
 	  TOFEnergyBkgCFBins->Fill(theEvent->TOFEnergy);
 	  EvsTOFEnergyBkg->Fill(theEvent->TOFEnergy,sqrt(theEvent->energies[0]*theEvent->energies[1]));
+	  //Loop over the different threshold option for lenda background spectra
+	  for (int a=0;a<LendaThreshsBkg.size();a++){
+	    if (TMath::Sqrt(theEvent->energies[0]*theEvent->energies[1])>threshVals[a]){
+	      LendaThreshsBkg[a]->Fill(theEvent->TOFEnergy);
+	    }
+	  }
 	}
       }
     }
@@ -425,7 +442,8 @@ int main(int argc, char **argv){
     TOFEnergyRBkgSubtracted1PSL_L->SetBinContent(i,NL_L-NRandomL_L);
     TOFEnergyRBkgSubtracted1PSL_L->SetBinError(i,TMath::Sqrt(NL_L+NRandomL_L));
   }
-
+  
+  //Spectra that have the CF BINNING
   for (int i=1;i<=TOFEnergySubCFBins->GetXaxis()->GetNbins();i++){
     Float_t N =TOFEnergyCFBins->GetBinContent(i);
     Float_t NRandom=TOFEnergyBkgCFBins->GetBinContent(i);
@@ -436,6 +454,13 @@ int main(int argc, char **argv){
     Float_t NRandomL_L=TOFEnergyBkgCFBinsL_L->GetBinContent(i);
     TOFEnergySubCFBinsL_L->SetBinContent(i,NL_L-NRandomL_L);
     TOFEnergySubCFBinsL_L->SetBinError(i,TMath::Sqrt(NL_L+NRandomL_L));
+    
+    for (int a=0;a<LendaThreshs.size();a++){
+      Float_t thisN=LendaThreshs[a]->GetBinContent(i);
+      Float_t thisNRandom=LendaThreshsBkg[a]->GetBinContent(i);
+      LendaThreshsResult[a]->SetBinContent(i,thisN-thisNRandom);
+      LendaThreshsResult[a]->SetBinError(i,sqrt(thisN+thisNRandom));
+    }
   }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -514,6 +539,14 @@ int main(int argc, char **argv){
   EvsTOFEnergyL_L->Write();
   EvsTOFEnergyBkgL_L->Write();
 
+
+  for (int i=0;i<LendaThreshs.size();i++){
+    LendaThreshs[i]->Write();
+    LendaThreshsBkg[i]->Write();
+    LendaThreshsResult[i]->Write();
+    
+  }
+  
   /*  for (int i=0;i<ReferenceEnergiesScaled.size();i++){
     for (int j=0;j<ReferenceEnergiesScaled[i].size();j++){
       ReferenceEnergiesScaled[i][j]->Scale(20);
